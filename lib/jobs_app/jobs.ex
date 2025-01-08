@@ -21,6 +21,10 @@ defmodule JobsApp.Jobs do
     Repo.delete(job)
   end
 
+  def find_job(id) do
+    Repo.get!(Job, id)
+  end
+
   def list_jobs() do
     query = from(job in Job, order_by: [desc: :inserted_at])
     Repo.all(query)
