@@ -10,7 +10,7 @@ defmodule JobsAppWeb.JobsLive do
   @impl true
   def mount(_params, _session, socket) do
     jobs = Jobs.list_jobs()
-    socket = assign(socket, jobs: jobs)
+    socket = stream(socket, :jobs, jobs)
     {:ok, socket}
   end
 
@@ -34,10 +34,12 @@ defmodule JobsAppWeb.JobsLive do
   def handle_event("save", %{"job" => params}, socket) do
     case Jobs.insert_or_update_job(socket.assigns.job, params) do
       {:ok, job} ->
+        socket = stream_insert(socket, :jobs, job, at: 0)
+
         {:noreply,
          socket
          |> put_flash(:info, "job created: #{job.title}")
-         |> push_navigate(to: ~p"/")}
+         |> push_patch(to: ~p"/")}
 
       {:error, changeset} ->
         {:noreply, assign(socket, changeset: changeset)}
@@ -46,20 +48,21 @@ defmodule JobsAppWeb.JobsLive do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    socket.assigns.jobs
-    |> find_job(id)
+    Jobs.find_job(id)
     |> Jobs.delete_job()
     |> case do
       {:ok, job} ->
+        socket = stream_delete(socket, :jobs, job)
+
         {:noreply,
          socket
          |> put_flash(:info, "Job eliminado: #{job.title}")
-         |> push_navigate(to: ~p"/")}
+         |> push_patch(to: ~p"/")}
 
       {:error, _error} ->
         {:noreply,
          socket
-         |> put_flash(:error, "Job no pudo eliminado: #{socket.assigns.job.title}")}
+         |> put_flash(:error, "Job no pudo eliminarse: #{socket.assigns.job.title}")}
     end
   end
 
@@ -70,8 +73,8 @@ defmodule JobsAppWeb.JobsLive do
       <.button phx-click={JS.patch(%JS{}, ~p"/new") |> show_modal("job-form-modal")}>
         <%= gettext("Publicar") %>
       </.button>
-      <div>
-        <.job_row :for={job <- @jobs} job={job} />
+      <div id="jobs" phx-update="stream">
+        <.job_row :for={{dom_id, job} <- @streams.jobs} id={dom_id} job={job} />
       </div>
     </div>
     <.job_form_modal :if={@live_action in [:new, :edit]} changeset={@changeset} job={@job} />
@@ -91,20 +94,15 @@ defmodule JobsAppWeb.JobsLive do
   end
 
   defp apply_action(:edit, %{"id" => id}, socket) do
-    job = find_job(socket.assigns.jobs, id)
+    job = Jobs.find_job(id)
     changeset = Job.changeset(job)
 
     assign(socket, changeset: changeset, job: job)
   end
 
   defp apply_action(:show, %{"id" => id}, socket) do
-    job = find_job(socket.assigns.jobs, id)
+    job = Jobs.find_job(id)
 
     assign(socket, job: job)
-  end
-
-  defp find_job(jobs, id) do
-    {id, _} = Integer.parse(id)
-    Enum.find(jobs, fn job -> job.id == id end)
   end
 end
