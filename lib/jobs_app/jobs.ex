@@ -3,6 +3,8 @@ defmodule JobsApp.Jobs do
   alias JobsApp.Schema.Job
   import Ecto.Query
 
+  @per_page 20
+
   def create_job(attr) do
     %Job{}
     |> Job.changeset(attr)
@@ -25,8 +27,10 @@ defmodule JobsApp.Jobs do
     Repo.get!(Job, id)
   end
 
-  def list_jobs() do
-    query = from(job in Job, order_by: [desc: :inserted_at])
+  def list_jobs(page \\ 1) do
+    offset = (page - 1) * @per_page
+    
+    query = from(job in Job, limit: @per_page, offset: ^offset, order_by: [desc: :inserted_at])
     Repo.all(query)
   end
 end
