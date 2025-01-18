@@ -60,26 +60,30 @@ defmodule JobsAppWeb.JobsLive.Components do
   attr :id, :string, required: true
 
   def job_row(assigns) do
-    ~H"""
-    <div id={@id} class="border-b last:border-b-0 py-2 flex justify-between">
-      <div>
-        <.link patch={~p"/#{@job.id}"} class="hover:underline">
-          <%= @job.title %>
-        </.link>
-      </div>
-      <div>
-        <.button phx-click={JS.patch(%JS{}, ~p"/edit/#{@job.id}") |> show_modal("job-form-modal")}>
-          <%= gettext("Editar") %>
-        </.button>
-        <.button
-          phx-click="delete"
-          phx-value-id={@job.id}
-          data-confirm={gettext("Seguro que desea eliminar?")}
-        >
-          <%= gettext("Eliminar") %>
-        </.button>
-      </div>
-    </div>
-    """
-  end
+  ~H"""
+  <tr id={@id} class="border-b last:border-b-0">
+    <td>
+      <%= @job.id %>
+    </td>
+    <td>
+      <.link patch={~p"/#{@job.id}"} class="hover:underline">
+        <%= @job.title %>
+      </.link>
+    </td>
+    <td class="w-1/4 whitespace-no-wrap">
+      <.button phx-click={JS.patch(%JS{}, ~p"/edit/#{@job.id}") |> show_modal("job-form-modal")}>
+        <%= gettext("Editar") %>
+      </.button>
+      <.button
+        phx-click="delete"
+        phx-value-id={@job.id}
+        class="bg-red-600"
+        data-confirm={gettext("Seguro que desea eliminar?")}
+      >
+        <%= gettext("Eliminar") %>
+      </.button>
+    </td>
+  </tr>
+  """
+end
 end

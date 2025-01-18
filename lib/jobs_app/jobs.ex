@@ -25,8 +25,8 @@ defmodule JobsApp.Jobs do
     Repo.get!(Job, id)
   end
 
-  def list_jobs() do
+  def list_jobs(params \\ %{}) do
     query = from(job in Job, order_by: [desc: :inserted_at])
-    Repo.all(query)
+    Repo.paginate(query, params)
   end
 end
