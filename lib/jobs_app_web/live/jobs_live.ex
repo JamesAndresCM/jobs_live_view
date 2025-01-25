@@ -77,6 +77,11 @@ defmodule JobsAppWeb.JobsLive do
       <.button phx-click={JS.patch(%JS{}, ~p"/new") |> show_modal("job-form-modal")}>
         <%= gettext("Publicar") %>
       </.button>
+
+      <.button phx-click={show_modal("login-form-modal")}>
+        <%= gettext("Ingresar") %>
+      </.button>
+
       <div id="jobs" phx-update="stream" phx-viewport-bottom={!@end_of_timeline? && "next-page"}>
         <.job_row :for={{dom_id, job} <- @streams.jobs} id={dom_id} job={job} />
       </div>
@@ -91,6 +96,10 @@ defmodule JobsAppWeb.JobsLive do
 
   defp apply_action(:index, _params, socket) do
     assign(socket, changeset: nil, job: nil)
+  end
+
+  defp apply_action(:login, _params, socket) do
+    socket
   end
 
   defp apply_action(:new, _params, socket) do
