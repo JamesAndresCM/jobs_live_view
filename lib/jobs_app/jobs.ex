@@ -29,7 +29,7 @@ defmodule JobsApp.Jobs do
 
   def list_jobs(page \\ 1) do
     offset = (page - 1) * @per_page
-    
+
     query = from(job in Job, limit: @per_page, offset: ^offset, order_by: [desc: :inserted_at])
     Repo.all(query)
   end
