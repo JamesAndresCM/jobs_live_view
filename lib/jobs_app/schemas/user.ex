@@ -1,8 +1,10 @@
 defmodule JobsApp.Schema.User do
   use Ecto.Schema
   import Ecto.Changeset
+  alias JobsApp.Schema.UserToken
 
   schema "users" do
+    has_many :tokens, UserToken
     field :email, :string
     timestamps()
   end
