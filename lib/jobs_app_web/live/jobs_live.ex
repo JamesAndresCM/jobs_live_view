@@ -6,10 +6,25 @@ defmodule JobsAppWeb.JobsLive do
 
   alias JobsApp.Schema.Job
   alias JobsApp.Jobs
+  alias JobsApp.Services.UserTokenService
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, paginate_jobs(socket, 1)}
+  def mount(_params, session, socket) do
+    current_user =
+      case session do
+        %{"user_token" => token} ->
+          UserTokenService.get_user_by_token(token)
+
+        _ ->
+          nil
+      end
+
+    socket =
+      socket
+      |> assign(current_user: current_user)
+      |> paginate_jobs(1)
+
+    {:ok, socket}
   end
 
   @impl true
@@ -74,6 +89,13 @@ defmodule JobsAppWeb.JobsLive do
   def render(assigns) do
     ~H"""
     <div class="space-y-8">
+      <div :if={@current_user}>
+        <%= @current_user.email %>
+        <.link href={~p"/users/sessions/logout"} method="delete">
+          <%= gettext("Salir") %>
+        </.link>
+      </div>
+
       <.button phx-click={JS.patch(%JS{}, ~p"/new") |> show_modal("job-form-modal")}>
         <%= gettext("Publicar") %>
       </.button>

@@ -17,7 +17,8 @@ defmodule JobsAppWeb.Router do
   scope "/", JobsAppWeb do
     pipe_through :browser
 
-    # get "/", PageController, :home
+    delete "/users/sessions/logout", UserSessionsController, :logout
+    get "/users/sessions/:token", UserSessionsController, :index
     live "/", JobsLive, :index
     live "/new", JobsLive, :new
     live "/edit/:id", JobsLive, :edit
