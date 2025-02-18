@@ -6,25 +6,10 @@ defmodule JobsAppWeb.JobsLive do
 
   alias JobsApp.Schema.Job
   alias JobsApp.Jobs
-  alias JobsApp.Services.UserTokenService
 
   @impl true
-  def mount(_params, session, socket) do
-    current_user =
-      case session do
-        %{"user_token" => token} ->
-          UserTokenService.get_user_by_token(token)
-
-        _ ->
-          nil
-      end
-
-    socket =
-      socket
-      |> assign(current_user: current_user)
-      |> paginate_jobs(1)
-
-    {:ok, socket}
+  def mount(_params, _session, socket) do
+    {:ok, paginate_jobs(socket, 1)}
   end
 
   @impl true
@@ -96,16 +81,16 @@ defmodule JobsAppWeb.JobsLive do
         </.link>
       </div>
 
-      <.button phx-click={JS.patch(%JS{}, ~p"/new") |> show_modal("job-form-modal")}>
+      <.button :if={@current_user} phx-click={JS.patch(%JS{}, ~p"/new") |> show_modal("job-form-modal")}>
         <%= gettext("Publicar") %>
       </.button>
 
-      <.button phx-click={show_modal("login-form-modal")}>
+      <.button :if={!@current_user} phx-click={show_modal("login-form-modal")}>
         <%= gettext("Ingresar") %>
       </.button>
 
       <div id="jobs" phx-update="stream" phx-viewport-bottom={!@end_of_timeline? && "next-page"}>
-        <.job_row :for={{dom_id, job} <- @streams.jobs} id={dom_id} job={job} />
+        <.job_row :for={{dom_id, job} <- @streams.jobs} id={dom_id} job={job} current_user={@current_user} />
       </div>
       <div :if={@end_of_timeline?} class="mt-5 text-center">
         🎉 <%= gettext("no existen mas registros") %> 🎉
