@@ -7,7 +7,6 @@ defmodule JobsAppWeb.JobsLive.Components do
 
   alias Phoenix.LiveView.JS
   alias JobsApp.Schema.Job
-  alias JobsApp.Schema.User
 
   attr :changeset, Ecto.Changeset, required: true
   attr :job, Job, required: true

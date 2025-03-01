@@ -27,10 +27,28 @@ defmodule JobsApp.Jobs do
     Repo.get!(Job, id)
   end
 
+  def find_user_jobs(id, user_id) do
+    Repo.get_by!(Job, %{id: id, user_id: user_id})
+  end
+
   def list_jobs(page \\ 1) do
     offset = (page - 1) * @per_page
 
     query = from(job in Job, limit: @per_page, offset: ^offset, order_by: [desc: :inserted_at])
+    Repo.all(query)
+  end
+
+  def list_jobs(page, user_id) do
+    offset = (page - 1) * @per_page
+
+    query =
+      from(jobs in Job,
+        where: jobs.user_id == ^user_id,
+        limit: @per_page,
+        offset: ^offset,
+        order_by: [desc: :inserted_at]
+      )
+
     Repo.all(query)
   end
 end

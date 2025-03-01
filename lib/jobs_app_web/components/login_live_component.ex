@@ -1,7 +1,7 @@
 defmodule JobsAppWeb.LoginLiveComponent do
   use JobsAppWeb, :live_component
 
-  import JobsAppWeb.CoreComponents, only: [modal: 1, button: 1, input: 1]
+  import JobsAppWeb.CoreComponents, only: [modal: 1, button: 1, input: 1, show_modal: 1]
   import JobsAppWeb.Gettext
   alias JobsApp.Schema.User
   alias JobsApp.Users
@@ -11,6 +11,16 @@ defmodule JobsAppWeb.LoginLiveComponent do
     user = %User{}
     changeset = User.changeset(user)
     socket = assign(socket, user: user, changeset: changeset)
+    {:ok, socket}
+  end
+
+  @impl true
+  def update(assigns, socket) do
+    socket =
+      assign(socket,
+        current_user: Map.get(assigns, :current_user, nil)
+      )
+
     {:ok, socket}
   end
 
@@ -45,9 +55,21 @@ defmodule JobsAppWeb.LoginLiveComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <.modal id="login-form-modal">
-        <.user_form changeset={@changeset} target={@myself} />
-      </.modal>
+      <div :if={!@current_user}>
+        <.button phx-click={show_modal("login-form-modal")}>
+          <%= gettext("Ingresar") %>
+        </.button>
+        <.modal id="login-form-modal">
+          <.user_form changeset={@changeset} target={@myself} />
+        </.modal>
+      </div>
+
+      <div :if={@current_user}>
+        <%= @current_user.email %>
+        <.link href={~p"/users/sessions/logout"} method="delete">
+          <%= gettext("Salir") %>
+        </.link>
+      </div>
     </div>
     """
   end
