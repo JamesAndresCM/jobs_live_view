@@ -1,5 +1,6 @@
 defmodule JobsAppWeb.Router do
   use JobsAppWeb, :router
+  import JobsAppWeb.UserAuth, only: [redirect_if_user_is_authenticated: 2]
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -15,22 +16,28 @@ defmodule JobsAppWeb.Router do
   end
 
   scope "/", JobsAppWeb do
-    pipe_through :browser
-
-    delete "/users/sessions/logout", UserSessionsController, :logout
+    pipe_through [:browser, :redirect_if_user_is_authenticated]
     get "/users/sessions/:token", UserSessionsController, :index
+  end
 
-    live_session :ensure_authenticated, on_mount: [
-      {JobsAppWeb.UserAuth, :mount_current_user},
-      {JobsAppWeb.UserAuth, :ensure_authenticated}
-    ] do
-      live "/new", JobsLive, :new
-      live "/edit/:id", JobsLive, :edit
+  scope "/", JobsAppWeb do
+    pipe_through :browser
+    delete "/users/sessions/logout", UserSessionsController, :logout
+
+    live_session :ensure_authenticated,
+      on_mount: [
+        {JobsAppWeb.UserAuth, :mount_current_user},
+        {JobsAppWeb.UserAuth, :ensure_authenticated}
+      ] do
+      live "/new", MyJobsLive, :new
+      live "/edit/:id", MyJobsLive, :edit
+      live "my-jobs", MyJobsLive, :my_jobs
     end
 
-    live_session :current_user, on_mount: [
-      {JobsAppWeb.UserAuth, :mount_current_user}
-    ] do
+    live_session :current_user,
+      on_mount: [
+        {JobsAppWeb.UserAuth, :mount_current_user}
+      ] do
       live "/", JobsLive, :index
       live "/:id", JobsLive, :show
     end
