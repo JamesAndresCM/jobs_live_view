@@ -6,6 +6,7 @@ defmodule JobsAppWeb.MyJobsLive do
 
   alias JobsApp.Schema.Job
   alias JobsApp.Jobs
+  alias Phoenix.PubSub
 
   @impl true
   def mount(_params, _session, socket) do
@@ -33,6 +34,7 @@ defmodule JobsAppWeb.MyJobsLive do
     case Jobs.insert_or_update_job(socket.assigns.job, params) do
       {:ok, job} ->
         socket = stream_insert(socket, :jobs, job, at: 0)
+        PubSub.broadcast(JobsApp.PubSub, "new_jobs", {:new_jobs})
 
         {:noreply,
          socket
