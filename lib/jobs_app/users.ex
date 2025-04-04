@@ -18,11 +18,11 @@ defmodule JobsApp.Users do
     end
   end
 
-  defp find_user(%{"email" => email}) do
+  def find_user(%{"email" => email}) do
     Repo.get_by(User, %{email: email})
   end
 
-  defp find_user(_) do
+  def find_user(_) do
     nil
   end
 
